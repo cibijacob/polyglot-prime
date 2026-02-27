@@ -41,7 +41,7 @@ INSERT INTO techbd_udi_ingress.sat_csv_fhir_processing_errors (
             zip.csv_zip_file_name,
             CASE
                 WHEN tasks.value ->> 'name' = 'qe_admin_data' THEN orig.qe_admin_data_file_name
-                WHEN tasks.value ->> 'name' = 'demographic_data' THEN orig.demographic_data_file_name
+                WHEN tasks.value ->> 'name' = 'pt_info_data' THEN orig.demographic_data_file_name
                 WHEN tasks.value ->> 'name' = 'screening_observation_data' THEN orig.screening_observation_data_file_name
                 WHEN tasks.value ->> 'name' = 'screening_profile_data' THEN orig.screening_profile_data_file_name
                 ELSE NULL
