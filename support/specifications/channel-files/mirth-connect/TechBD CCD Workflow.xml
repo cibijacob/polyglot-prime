@@ -3,7 +3,7 @@
   <nextMetaDataId>12</nextMetaDataId>
   <name>TechBD CCD Workflow</name>
   <description>Version: 0.4.52</description>
-  <revision>61</revision>
+  <revision>67</revision>
   <sourceConnector version="4.5.0">
     <metaDataId>0</metaDataId>
     <name>sourceConnector</name>
@@ -1605,7 +1605,7 @@ function setResourceIdParameters(transformer) {
 	transformer.setParameter(&apos;patient-MRN&apos;, channelMap.get(&apos;Patient-MRN&apos;));
 	
 	// Extract `sexualOrientation`
-	var sexualOrientation = xmlDoc.*::component
+	/*var sexualOrientation = xmlDoc.*::component
                               .*::structuredBody
                               .*::component
                               .*::section.(@ID == &apos;sexualOrientation&apos;)
@@ -1615,8 +1615,28 @@ function setResourceIdParameters(transformer) {
 		transformer = generateCompactSha256(sexualOrientation, &quot;sexualOrientation&quot;, &quot;sexualOrientationResourceId&quot;, transformer);	
 	} else {
 	    	logger.info(&quot;No sexualOrientation section found.&quot;);
+	}*/
+	try {
+	    var sexualOrientation = xmlDoc.*::component
+	                                  .*::structuredBody
+	                                  .*::component
+	                                  .*::section.(@ID == &quot;sexualOrientation&quot;)
+	                                  .*::entry
+	                                  .*::observation.(code.@code == &quot;76690-7&quot;);	
+	    if (sexualOrientation != undefined &amp;&amp; sexualOrientation.length() &gt; 0) {
+	        transformer = generateCompactSha256(
+	            sexualOrientation,
+	            &quot;sexualOrientation&quot;,
+	            &quot;sexualOrientationResourceId&quot;,
+	            transformer
+	        );
+	    } else {
+	        logger.info(&quot;No sexualOrientation section found.&quot;);
+	    }	
+	} catch (e) {
+	    logger.info(&quot;SexualOrientation section not found.&quot;);
 	}
-
+	
 	// Extract `encompassingEncounter`
 	try {
 		var encounter = xmlDoc.*::componentOf.*::encompassingEncounter;
@@ -1823,14 +1843,16 @@ function setResourceIdParameters(transformer) {
 					        );
 					    };
 	    // Primary location path: componentOf → encompassingEncounter → location → healthCareFacility → location
-	    var componentOf = xmlDoc.*::componentOf[0];
+	    var componentOf = new XMLList();
+		if (xmlDoc.*::componentOf.length() &gt; 0) {
+		    componentOf = xmlDoc.*::componentOf[0];
+		}
 		if (
-		    componentOf &amp;&amp;
-		    componentOf.*::encompassingEncounter &amp;&amp;
-		    componentOf.*::encompassingEncounter.*::location &amp;&amp;
-		    componentOf.*::encompassingEncounter.*::location.length() &gt; 0 &amp;&amp;
-		    componentOf.*::encompassingEncounter.*::location[0].*::healthCareFacility
-		) {
+            componentOf.*::encompassingEncounter.length() &gt; 0 &amp;&amp;
+            componentOf.*::encompassingEncounter[0].*::location.length() &gt; 0 &amp;&amp;
+            componentOf.*::encompassingEncounter[0].*::location[0].*::healthCareFacility.length() &gt; 0
+          ) {
+	    		logger.info(&quot;Found healthCareFacility&quot;);
 	    		var healthCareFacility = componentOf.*::encompassingEncounter.*::location[0].*::healthCareFacility;
 			if (healthCareFacility.*::location.length() &gt; 0) {
 			    location = healthCareFacility.*::location[0];
@@ -2862,7 +2884,7 @@ return;</undeployScript>
     <metadata>
       <enabled>true</enabled>
       <lastModified>
-        <time>1784181214173</time>
+        <time>1784192850366</time>
         <timezone>Asia/Calcutta</timezone>
       </lastModified>
       <pruningSettings>
